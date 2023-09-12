@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Page</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Font - Roboto -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+
+    <style>
+
+        body {
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .table {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+
+        .carousel img {
+            max-height: 100%;
+            width: auto;
+            border-radius: 8px;
+        }
+        .carousel-item {
+            height: 150px;
+            background-color: #f8f9fa;  
+            background-position: center center;  
+            background-repeat: no-repeat;  
+            background-size: contain;  
+        }
+ 
+        .carousel {
+            max-height: 100%;
+            width: auto;
+            border-radius: 8px;
+            margin: 0 auto;
+        }
+
+        th {
+            background-color: #f8f9fa;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container mt-4">
+        <input type="text" id="searchQuery" placeholder="Search..." class="form-control mb-2" style="width: 300px; display: inline-block;">
+        <button onclick="search()" class="btn btn-primary mb-2">Search</button>
+        <div id="results"></div>
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        function search() {
+            const query = document.getElementById("searchQuery").value;
+            fetch(`/search?query=${query}`)
+            .then(response => response.json())
+            .then(data => {
+                // Group the results by part number
+                const grouped = {};
+                data.forEach(item => {
+                    if (!grouped[item.part_number]) {
+                        grouped[item.part_number] = {
+                            description: item.description,
+                            images: []
+                        };
+                    }
+                    grouped[item.part_number].images.push(item.image);
+                });
+
+                                
+                    
+        let html = '<table class="table table-bordered">';  // Start table
+        html += '<thead>';  // Table header
+        html += '<tr>';
+        html += '<th>Part Number</th>';
+        html += '<th>Description</th>';
+        html += '<th>Image</th>';
+        html += '</tr>';
+        html += '</thead>';
+        html += '<tbody>';  // Table body
+
+        for (const partNumber in grouped) {
+            const item = grouped[partNumber];
+            html += `<tr>`;  // Start row
+            html += `<td>${partNumber}</td>`;  // Part number
+            html += `<td>${item.description}</td>`;  // Description
+
+            // Image Carousel
+            html += `<td>`;
+            html += `<div id="carousel${partNumber}" class="carousel slide" data-ride="carousel" style="width: 120px;">`;
+            html += `<div class="carousel-inner">`;
+
+            item.images.forEach((imgSrc, index) => {
+                html += `
+                <div class="carousel-item ${index === 0 ? 'active' : ''}" style="background-image: url('/image/${imgSrc.replace(/\\/g, '/')}')">
+                </div>`;
+                });
+
+                html += `</div>`;
+                html += `
+                    <a class="carousel-control-prev" href="#carousel${partNumber}" role="button" data-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="sr-only">Previous</span>
+                    </a>
+                    <a class="carousel-control-next" href="#carousel${partNumber}" role="button" data-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="sr-only">Next</span>
+                    </a>`;
+                html += `</div>`;
+                html += `</td>`;  // End of Image Carousel
+
+                html += `</tr>`;  // End row
+                }
+
+            html += '</tbody>';  // End table body
+            html += '</table>';  // End table
+
+                    document.getElementById("results").innerHTML = html;
+                });
+            }
+    </script>
+
+</body>
+</html>
