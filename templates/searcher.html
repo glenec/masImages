@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Search Page</title>
+    <title>Glens Testing Page</title>
     <!-- Bootstrap CSS -->
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <!-- Google Font - Roboto -->
@@ -44,12 +44,33 @@
         th {
             background-color: #f8f9fa;
         }
+
+        .image-container {
+            position: relative;
+        }
+
+        .btn-enlarge {
+            position: absolute;
+            top: 10px;  /* Adjust as needed */
+            right: 10px;  /* Adjust as needed */
+            opacity: 0.5;  /* Makes the button slightly transparent */
+            padding: 2px 5px;  /* Adjusts the padding inside the button to make it smaller */
+            font-size: 8px;  /* Adjusts the font size to make text smaller */
+            border-radius: 3px;  /* Gives the button slightly rounded corners */
+        }
+
+        .btn-enlarge:hover {
+            opacity: 1;  /* Makes the button fully opaque when hovered */
+        }
     </style>
 </head>
 
 <body>
     <div class="container mt-4">
-        <input type="text" id="searchQuery" placeholder="Search..." class="form-control mb-2" style="width: 300px; display: inline-block;">
+        <input type="text" id="searchQuery" placeholder="Search..." class="form-control mb-2" style="width: 300px; display: inline-block;" onkeydown="handleKeyPress(event)">
+        <label><input type="radio" name="searchType" value="keyword" checked> Keyword</label>
+        <label><input type="radio" name="searchType" value="part"> Part Number</label>
+    
         <button onclick="search()" class="btn btn-primary mb-2">Search</button>
         <div id="results"></div>
     </div>
@@ -58,9 +79,25 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
     <script>
+
+        function handleKeyPress(event) {
+            if (event.keyCode === 13 && event.target.id === 'searchQuery') {
+                search();
+            }
+        }
+
         function search() {
             const query = document.getElementById("searchQuery").value;
-            fetch(`/search?query=${query}`)
+            const searchType = document.querySelector('input[name="searchType"]:checked').value;
+
+            let endpoint;
+            if (searchType === "part") {
+                endpoint = `/search-part?query=${query}`;
+            } else {
+                endpoint = `/search?query=${query}`;
+            }
+
+            fetch(endpoint)
             .then(response => response.json())
             .then(data => {
                 // Group the results by part number
@@ -80,9 +117,9 @@
         let html = '<table class="table table-bordered">';  // Start table
         html += '<thead>';  // Table header
         html += '<tr>';
-        html += '<th>Part Number</th>';
-        html += '<th>Description</th>';
-        html += '<th>Image</th>';
+        html += '<th class="text-center">Part Number</th>';
+        html += '<th class="text-center">Description</th>';
+        html += '<th class="text-center">Image</th>';
         html += '</tr>';
         html += '</thead>';
         html += '<tbody>';  // Table body
@@ -100,8 +137,10 @@
 
             item.images.forEach((imgSrc, index) => {
                 html += `
-                <div class="carousel-item ${index === 0 ? 'active' : ''}" style="background-image: url('/image/${imgSrc.replace(/\\/g, '/')}')">
-                </div>`;
+                    <div class="carousel-item ${index === 0 ? 'active' : ''}">
+                        <img src="/image/${imgSrc.replace(/\\/g, '/')}" class="d-block w-100" alt="Image for ${partNumber}">
+                        <button class="btn btn-sm btn-primary btn-enlarge" data-toggle="modal" data-target="#imageModal" data-image-src="/image/${imgSrc.replace(/\\/g, '/')}">Zoom</button>
+                    </div>`;
                 });
 
                 html += `</div>`;
@@ -122,8 +161,27 @@
 
             html += '</tbody>';  // End table body
             html += '</table>';  // End table
+            html += `
+                <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-xl">
+                        <div class="modal-content" style="max-height: 90vh; overflow: auto;">
+                            <div class="modal-body">
+                                <img src="" id="enlargedImage" style="max-width: 100%; max-height: 80vh; display: block; margin: 0 auto;">
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
 
                     document.getElementById("results").innerHTML = html;
+                    let enlargeButtons = document.querySelectorAll(".btn-enlarge");
+
+                    enlargeButtons.forEach(button => {
+                        button.addEventListener("click", function(e) {
+                            let imageSrc = e.target.getAttribute("data-image-src");
+                            let modalImage = document.getElementById("enlargedImage");
+                            modalImage.src = imageSrc;
+                        });
+                    });
                 });
             }
     </script>
