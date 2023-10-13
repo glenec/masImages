@@ -4,187 +4,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Glens Testing Page</title>
-    <!-- Bootstrap CSS -->
+    <title>CC Image Helper</title>
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Google Font - Roboto -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
-
-    <style>
-
-        body {
-            font-family: 'Roboto', sans-serif;
-        }
-
-        .table {
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-
-        .carousel img {
-            max-height: 100%;
-            width: auto;
-            border-radius: 8px;
-        }
-        .carousel-item {
-            height: 150px;
-            background-color: #f8f9fa;  
-            background-position: center center;  
-            background-repeat: no-repeat;  
-            background-size: contain;  
-        }
- 
-        .carousel {
-            max-height: 100%;
-            width: auto;
-            border-radius: 8px;
-            margin: 0 auto;
-        }
-
-        th {
-            background-color: #f8f9fa;
-        }
-
-        .image-container {
-            position: relative;
-        }
-
-        .btn-enlarge {
-            position: absolute;
-            top: 10px;  /* Adjust as needed */
-            right: 10px;  /* Adjust as needed */
-            opacity: 0.5;  /* Makes the button slightly transparent */
-            padding: 2px 5px;  /* Adjusts the padding inside the button to make it smaller */
-            font-size: 8px;  /* Adjusts the font size to make text smaller */
-            border-radius: 3px;  /* Gives the button slightly rounded corners */
-        }
-
-        .btn-enlarge:hover {
-            opacity: 1;  /* Makes the button fully opaque when hovered */
-        }
-    </style>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="stylesheet.css" rel="stylesheet">
 </head>
 
 <body>
-    <div class="container mt-4">
-        <input type="text" id="searchQuery" placeholder="Search..." class="form-control mb-2" style="width: 300px; display: inline-block;" onkeydown="handleKeyPress(event)">
-        <label><input type="radio" name="searchType" value="keyword" checked> Keyword</label>
-        <label><input type="radio" name="searchType" value="part"> Part Number</label>
+    <div class="container mt-9">
+        <div class="container-header">
+            
+            <div class="d-flex justify-content-start">
+                <select id="displayType" class="text-size-view" onchange="search()">
+                    <option value="grid" selected>Grid View</option>
+                    <option value="table">Table View</option>
+                </select>
+                
+            </div>
+
+            <div class="d-flex justify-content-end">
+                <a href="https://masman.photos/amazon"><img src="/image/\/static/amazon-icon.png" alt="amazonicon" id="link-logo">
+                </a>
+            </div>
+            
+            
+        </div>
+    </div>
     
-        <button onclick="search()" class="btn btn-primary mb-2">Search</button>
-        <div id="results"></div>
+    <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content" style="max-height: 90vh; overflow: auto;">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="image-container-modal">
+                        <a href="#" class="arrow-icon" id="prevImage">&lt;</a>
+                        <img src="" id="enlargedImage" style="max-width: 100%; max-height: 70vh; display: block; margin: 0 auto;">
+                        <a href="#" class="arrow-icon" id="nextImage">&gt;</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container mt-4" id="upper-container">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+    </div>
+    <div class="logo-container">
+        <a href="https://masman.photos/costco"><img src="/image/static/costco.jpg" alt="costco" id="site-logo">
+        </a>
+    </div>
+       
+    <div class="search-section" id="search-section">
+        <div class="input-group mb-2">
+            <input type="text" id="searchQuery" placeholder="Search..." class="form-control" onkeydown="handleKeyPress(event)">
+            <div class="input-group-append">
+                <button onclick="search()" class="btn btn-primary">Search</button>
+            </div>
+        </div>  
+        <div class="mb-2">
+            <label class="radio-label"><input type="radio" name="searchType" value="keyword" checked>Keyword</label>
+            <label class="radio-label"><input type="radio" name="searchType" value="part">Part Number</label>
+        </div>
+        <div id="resultsCount" class="mb-3"></div>
+    </div>
+    <div id="results"></div>
     </div>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
-    <script>
-
-        function handleKeyPress(event) {
-            if (event.keyCode === 13 && event.target.id === 'searchQuery') {
-                search();
-            }
-        }
-
-        function search() {
-            const query = document.getElementById("searchQuery").value;
-            const searchType = document.querySelector('input[name="searchType"]:checked').value;
-
-            let endpoint;
-            if (searchType === "part") {
-                endpoint = `/search-part?query=${query}`;
-            } else {
-                endpoint = `/search?query=${query}`;
-            }
-
-            fetch(endpoint)
-            .then(response => response.json())
-            .then(data => {
-                // Group the results by part number
-                const grouped = {};
-                data.forEach(item => {
-                    if (!grouped[item.part_number]) {
-                        grouped[item.part_number] = {
-                            description: item.description,
-                            images: []
-                        };
-                    }
-                    grouped[item.part_number].images.push(item.image);
-                });
-
-                                
-                    
-        let html = '<table class="table table-bordered">';  // Start table
-        html += '<thead>';  // Table header
-        html += '<tr>';
-        html += '<th class="text-center">Part Number</th>';
-        html += '<th class="text-center">Description</th>';
-        html += '<th class="text-center">Image</th>';
-        html += '</tr>';
-        html += '</thead>';
-        html += '<tbody>';  // Table body
-
-        for (const partNumber in grouped) {
-            const item = grouped[partNumber];
-            html += `<tr>`;  // Start row
-            html += `<td>${partNumber}</td>`;  // Part number
-            html += `<td>${item.description}</td>`;  // Description
-
-            // Image Carousel
-            html += `<td>`;
-            html += `<div id="carousel${partNumber}" class="carousel slide" data-ride="carousel" style="width: 120px;">`;
-            html += `<div class="carousel-inner">`;
-
-            item.images.forEach((imgSrc, index) => {
-                html += `
-                    <div class="carousel-item ${index === 0 ? 'active' : ''}">
-                        <img src="/image/${imgSrc.replace(/\\/g, '/')}" class="d-block w-100" alt="Image for ${partNumber}">
-                        <button class="btn btn-sm btn-primary btn-enlarge" data-toggle="modal" data-target="#imageModal" data-image-src="/image/${imgSrc.replace(/\\/g, '/')}">Zoom</button>
-                    </div>`;
-                });
-
-                html += `</div>`;
-                html += `
-                    <a class="carousel-control-prev" href="#carousel${partNumber}" role="button" data-slide="prev">
-                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                        <span class="sr-only">Previous</span>
-                    </a>
-                    <a class="carousel-control-next" href="#carousel${partNumber}" role="button" data-slide="next">
-                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                        <span class="sr-only">Next</span>
-                    </a>`;
-                html += `</div>`;
-                html += `</td>`;  // End of Image Carousel
-
-                html += `</tr>`;  // End row
-                }
-
-            html += '</tbody>';  // End table body
-            html += '</table>';  // End table
-            html += `
-                <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-centered modal-xl">
-                        <div class="modal-content" style="max-height: 90vh; overflow: auto;">
-                            <div class="modal-body">
-                                <img src="" id="enlargedImage" style="max-width: 100%; max-height: 80vh; display: block; margin: 0 auto;">
-                            </div>
-                        </div>
-                    </div>
-                </div>`;
-
-                    document.getElementById("results").innerHTML = html;
-                    let enlargeButtons = document.querySelectorAll(".btn-enlarge");
-
-                    enlargeButtons.forEach(button => {
-                        button.addEventListener("click", function(e) {
-                            let imageSrc = e.target.getAttribute("data-image-src");
-                            let modalImage = document.getElementById("enlargedImage");
-                            modalImage.src = imageSrc;
-                        });
-                    });
-                });
-            }
-    </script>
+    <script src="cc.js"></script>
 
 </body>
 </html>

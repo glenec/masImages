@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Login</title>
+    <link href="login_stylesheet.css" rel="stylesheet">
+</head>
+
+<body>
+    <form method="post">
+        
+        <div>
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password">
+		<input type="hidden" name="next" value="{{ request.args.get('next', '') }}">
+        </div>
+        <div>
+            <button type="submit">Login</button>
+        </div>
+    </form>
+</body>
+</html>

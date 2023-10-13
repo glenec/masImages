@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AZ Image Helper</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="stylesheet.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container mt-9">
+        <div class="container-header">
+            
+            <div class="d-flex justify-content-start">
+                <select id="displayType" class="text-size-view" onchange="search()">
+                    <option value="grid" selected>Grid View</option>
+                    <option value="table">Table View</option>
+                </select>
+                
+            </div>
+
+            <div class="d-flex justify-content-end">
+                <a href="https://masman.photos/costco"><img src="/image/static/costco-icon.jpg" alt="costcoicon" id="link-logo">
+                </a>
+            </div>
+            
+            
+        </div>
+    </div>
+    
+    <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content" style="max-height: 90vh; overflow: auto;">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="image-container-modal">
+                        <a href="#" class="arrow-icon" id="prevImage">&lt;</a>
+                        <img src="" id="enlargedImage" style="max-width: 100%; max-height: 70vh; display: block; margin: 0 auto;">
+                        <a href="#" class="arrow-icon" id="nextImage">&gt;</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    
+    <div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+    </div>
+    <div class="logo-container">
+        <a href="https://masman.photos/amazon"><img src="/image/static/amazon.jpg" alt="amazon" id="site-logo"></a>
+    </div>
+
+    <div class="search-section">
+        <div class="input-group mb-2">
+            <input type="text" id="searchQuery" placeholder="Search..." class="form-control" onkeydown="handleKeyPress(event)">
+            <div class="input-group-append">
+                <button onclick="search()" class="btn btn-primary">Search</button>
+            </div>
+        </div>  
+        <div class="mb-2">
+            <label class="radio-label"><input type="radio" name="searchType" value="keyword" checked>Keyword</label>
+            <label class="radio-label"><input type="radio" name="searchType" value="part">ASIN Code</label>
+        </div>
+        <div id="resultsCount" class="mb-3"></div>
+    </div>
+    <div id="results"></div>
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="amazon_script.js"></script>
+
+</body>
+</html>
